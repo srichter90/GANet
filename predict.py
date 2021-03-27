@@ -9,6 +9,7 @@ from math import log10
 import sys
 import shutil
 import os
+import cv2
 import torch
 import torch.nn as nn
 import torch.nn.parallel
@@ -30,7 +31,7 @@ parser.add_argument('--cuda', type=bool, default=True, help='use cuda?')
 parser.add_argument('--kitti', type=int, default=0, help='kitti dataset? Default=False')
 parser.add_argument('--kitti2015', type=int, default=0, help='kitti 2015? Default=False')
 parser.add_argument('--data_path', type=str, required=True, help="data root")
-parser.add_argument('--test_list', type=str, required=True, help="training list")
+parser.add_argument('--sequence', type=str, required=True, help="data sequence")
 parser.add_argument('--save_path', type=str, default='./result/', help="location to save result")
 parser.add_argument('--model', type=str, default='GANet_deep', help="model to train")
 
@@ -113,7 +114,7 @@ def load_data(leftname, rightname):
     temp_data[5, :, :] = (b - np.mean(b[:])) / np.std(b[:])
     return temp_data
 
-def test(leftname, rightname, savename):
+def test(leftname, rightname, savename, savenameVis):
   #  count=0
     
     input1, input2, height, width = test_transform(load_data(leftname, rightname), opt.crop_height, opt.crop_width)
@@ -131,27 +132,32 @@ def test(leftname, rightname, savename):
      
     temp = prediction.cpu()
     temp = temp.detach().numpy()
+    result = np.zeros((height, width))
     if height <= opt.crop_height and width <= opt.crop_width:
-        temp = temp[0, opt.crop_height - height: opt.crop_height, opt.crop_width - width: opt.crop_width]
+        result = temp[0, opt.crop_height - height: opt.crop_height, opt.crop_width - width: opt.crop_width]
     else:
-        temp = temp[0, :, :]
-    skimage.io.imsave(savename, (temp * 256).astype('uint16'))
+        start_x = int((width - opt.crop_width) / 2)
+        start_y = int((height - opt.crop_height) / 2)
+        result[start_x:temp.shape[1] + start_x, start_y:temp.shape[2] + start_y] = temp[0, :, :]
+    skimage.io.imsave(savename + ".tiff", result)
+
+    vis = cv2.applyColorMap(np.uint8(2 * result), cv2.COLORMAP_TURBO)
+    skimage.io.imsave(savenameVis, vis)
 
    
 if __name__ == "__main__":
     file_path = opt.data_path
-    file_list = opt.test_list
-    f = open(file_list, 'r')
-    filelist = f.readlines()
+    basePathLeft = file_path + 'image_02/' + opt.sequence + '/'
+    basePathRight = file_path + 'image_03/' + opt.sequence + '/'
+    filelist = os.listdir(basePathLeft)
+    print(os.listdir(basePathLeft))
+
     for index in range(len(filelist)):
         current_file = filelist[index]
-        if opt.kitti2015:
-            leftname = file_path + 'image_2/' + current_file[0: len(current_file) - 1]
-            rightname = file_path + 'image_3/' + current_file[0: len(current_file) - 1]
-        if opt.kitti:
-            leftname = file_path + 'colored_0/' + current_file[0: len(current_file) - 1]
-            rightname = file_path + 'colored_1/' + current_file[0: len(current_file) - 1]
+        leftname = basePathLeft + current_file
+        rightname = basePathRight + current_file
 
-        savename = opt.save_path + current_file[0: len(current_file) - 1]
-        test(leftname, rightname, savename)
+        savename = opt.save_path + "/disparity/" + current_file
+        savenameVis = opt.save_path + "/vis/" + current_file
+        test(leftname, rightname, savename, savenameVis)
 
