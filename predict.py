@@ -147,8 +147,8 @@ def test(leftname, rightname, savename, savenameVis):
    
 if __name__ == "__main__":
     file_path = opt.data_path
-    basePathLeft = file_path + 'image_02/' + opt.sequence + '/'
-    basePathRight = file_path + 'image_03/' + opt.sequence + '/'
+    basePathLeft = file_path + 'left/'
+    basePathRight = file_path + 'right/'
     filelist = os.listdir(basePathLeft)
     print(os.listdir(basePathLeft))
 
@@ -157,7 +157,7 @@ if __name__ == "__main__":
         leftname = basePathLeft + current_file
         rightname = basePathRight + current_file
 
-        savename = opt.save_path + "/disparity/" + current_file
+        savename = opt.save_path + "/" + current_file
         savenameVis = opt.save_path + "/vis/" + current_file
         test(leftname, rightname, savename, savenameVis)
 
