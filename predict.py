@@ -147,8 +147,8 @@ def test(leftname, rightname, savename, savenameVis):
    
 if __name__ == "__main__":
     file_path = opt.data_path
-    basePathLeft = file_path + 'left/'
-    basePathRight = file_path + 'right/'
+    basePathLeft = file_path + '/left/'
+    basePathRight = file_path + '/right/'
     filelist = os.listdir(basePathLeft)
     print(os.listdir(basePathLeft))
 
