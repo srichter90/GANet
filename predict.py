@@ -157,7 +157,7 @@ if __name__ == "__main__":
         leftname = basePathLeft + current_file
         rightname = basePathRight + current_file
 
-        savename = opt.save_path + "/" + current_file
+        savename = opt.save_path + "/disp/" + current_file
         savenameVis = opt.save_path + "/vis/" + current_file
         test(leftname, rightname, savename, savenameVis)
 
